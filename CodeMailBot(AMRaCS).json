@@ -1,0 +1,450 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "1.read the code related mail-->trigger\n2. Summarize the code using LLM.\n3. Generate the comments for the code.\n4. Step 2 and 3 to be done in parallel.\n5. Merge the output of step 2 and 3.\n6. Send the output to me as  mail\n",
+        "height": 240
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1776,
+        -576
+      ],
+      "typeVersion": 1,
+      "id": "408db22e-587d-4904-909e-5a9d18192e20",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": "en22cs301898@medicaps.ac.in"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1568,
+        -160
+      ],
+      "id": "0199baa6-076c-4645-af60-d2d0421208ff",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jrfwSTNoQIkcmMU9",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the code below\ncode:{{ $json.text }}\ngenerate comment of the code so that i can understand what each line of the code does\nNote: Do not modify existing code at all. just add comment whenever required.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "you are an helpful assistant and know how to code in python. You can help me to understand the code by adding comments to it."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -1216,
+        -352
+      ],
+      "id": "23494f69-02e4-4305-9c41-7361ea4c0f18",
+      "name": "comment addition"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=code given below-->\nCode:{{ $json.text }}\ngenerate a summary of what this code does in very simple language. Do note that the summary should contain all the important details there are in the code so that I know what the code is about in a quick glance",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "you are an expert of python code. You have ability to summarize code in simple language and have the knack to cover the important detail in summary.\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -1280,
+        48
+      ],
+      "id": "2ed45018-1786-458e-9539-b6bbb8f3e3b1",
+      "name": "code summary"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        -176
+      ],
+      "id": "78e76242-b164-4b3e-9985-35d79e917d73",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KnYkpJh6C9mOk03z",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        224
+      ],
+      "id": "4f44f2c7-dbd2-4c22-a9e9-673b97c056f8",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KnYkpJh6C9mOk03z",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -800,
+        -192
+      ],
+      "id": "43cdbf16-1685-41e6-a964-baba02d98692",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -192
+      ],
+      "id": "4a2d5dae-2696-4f37-97e5-834536c96e44",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "sendTo": "shashankff4@gmail.com",
+        "subject": "code summary and comments",
+        "message": "=\n{{ $json.html }}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        -160
+      ],
+      "id": "f8557891-072b-466b-b157-9ac9b898a8be",
+      "name": "Send a message",
+      "webhookId": "3f489845-2a1a-42b6-9d1f-0cc6643d4845",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jrfwSTNoQIkcmMU9",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b76b8453-25e7-4bd2-af11-fab571e9d64c",
+              "name": "message",
+              "value": "=code with comment:\n{{ $json.text[0] }}\n\n\ncode with summary:\n{{ $json.text[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        -192
+      ],
+      "id": "42f52a20-cc8f-4eae-a351-ebf7695baa35",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Convert the message into HTML format.\nInclude proper code blocks wherever necessary. \nThe code blocks should have syntax highlighting for the specific language used in the code.\n\nIMPORTANT RULES:\n- Return ONLY the raw HTML code\n- Do NOT wrap the output in markdown code blocks or triple backticks\n- Do NOT add any text before or after the HTML\n- Start your response directly with <!DOCTYPE html> and end with </html>\n\nMessage:\n{{ $json.message }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "you can convert any massage into html format that can be sent on mail to the user."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -128,
+        -336
+      ],
+      "id": "dedfae4f-1c5a-4263-812d-85451b4f5c76",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -64
+      ],
+      "id": "260f7d2d-8758-4c90-98de-b1ee28796518",
+      "name": "Google Gemini Chat Model2",
+      "retryOnFail": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "KnYkpJh6C9mOk03z",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "text = items[0]['json']['text']\n\nhtml_start = text.find('<!DOCTYPE html>')\nhtml_end = text.rfind('</html>') + len('</html>')\n\nhtml = text[html_start:html_end].strip()\n\nreturn [{'json': {'html': html}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        64
+      ],
+      "id": "d52a7973-be54-4ff5-b684-b4c5c9ee7b96",
+      "name": "Code in Python"
+    },
+    {
+      "parameters": {
+        "jsCode": "let text = $input.item.json.text;\n\nconst htmlStart = text.indexOf('<!DOCTYPE html>');\nconst htmlEnd = text.lastIndexOf('</html>') + '</html>'.length;\n\nconst html = text.substring(htmlStart, htmlEnd).trim();\n\nreturn [{ json: { html: html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -112
+      ],
+      "id": "f046a00d-6813-4e87-94bd-eb882f129fe5",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {
+    "code summary": [
+      {
+        "json": {
+          "text": "This Python code sets up a **user login system** that uses secure, time-limited access tokens.\n\nHere's how it works:\n\n1.  **Generate Tokens:** A function (`generate_token`) creates a **JSON Web Token (JWT)** for a given user. This token acts like a temporary pass, valid for **1 hour** (3600 seconds). It's uniquely tied to the user and is signed using a secret key for security.\n\n2.  **Verify Tokens:** Another function (`verify_token`) can check if a given token is **valid** and hasn't **expired**. If the token is expired or otherwise invalid, it won't be accepted.\n\n3.  **Login Process:** The main `login` function takes a `username` and `password`.\n    *   It checks these credentials against a database (`db`).\n    *   If the credentials are correct, it generates and returns a brand new, 1-hour valid token for that user.\n    *   If the credentials are wrong, it returns an \"Invalid credentials\" error.\n\nIn essence, it manages user logins by issuing and verifying secure, expiring access tokens."
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "comment addition": [
+      {
+        "json": {
+          "text": "```python\nimport jwt\nimport time\n\n# Define a secret key used for encoding and decoding JWT tokens.\n# This key should be kept confidential and not exposed.\nSECRET_KEY = \"s3cr3t\"\n# Define the token's expiration time in seconds (e.g., 3600 seconds = 1 hour).\nTOKEN_EXPIRY = 3600\n\ndef generate_token(user_id):\n    \"\"\"\n    Generates a JSON Web Token (JWT) for a given user ID.\n\n    Args:\n        user_id: The unique identifier of the user.\n\n    Returns:\n        A string representing the encoded JWT.\n    \"\"\"\n    # Create the payload for the JWT.\n    # 'user_id' is the subject of the token.\n    # 'exp' (expiration time) is a Unix timestamp indicating when the token expires.\n    payload = {\n        \"user_id\": user_id,\n        \"exp\": time.time() + TOKEN_EXPIRY # Current time + token expiry duration\n    }\n    # Encode the payload using the SECRET_KEY and HS256 algorithm.\n    return jwt.encode(payload, SECRET_KEY, algorithm=\"HS256\")\n\ndef verify_token(token):\n    \"\"\"\n    Verifies and decodes a given JWT.\n\n    Args:\n        token: The JWT string to verify.\n\n    Returns:\n        The decoded payload if the token is valid, otherwise None.\n    \"\"\"\n    try:\n        # Attempt to decode the token using the SECRET_KEY and specified algorithms.\n        data = jwt.decode(token, SECRET_KEY, algorithms=[\"HS256\"])\n        return data\n    except jwt.ExpiredSignatureError:\n        # Handle the case where the token has expired.\n        return None\n    except jwt.InvalidTokenError:\n        # Handle the case where the token is invalid (e.g., tampered with, wrong signature).\n        return None\n\ndef login(username, password, db):\n    \"\"\"\n    Authenticates a user and generates a new token upon successful login.\n\n    Args:\n        username: The user's username.\n        password: The user's password (raw, to be hashed for comparison).\n        db: A database object with a find_user method and a way to hash passwords.\n\n    Returns:\n        A dictionary containing the token and its expiry, or an error message.\n    \"\"\"\n    # Find the user in the database by username.\n    user = db.find_user(username)\n    # Check if the user exists and if the provided password matches the stored hashed password.\n    # Assuming hash_password is a function available in the scope or db object that hashes the input password for comparison.\n    if not user or user.password != hash_password(password):\n        # If credentials are invalid, return an error.\n        return {\"error\": \"Invalid credentials\"}\n    \n    # If credentials are valid, generate a new token for the user.\n    token = generate_token(user.id)\n    # Return the generated token and its expiration time.\n    return {\"token\": token, \"expires_in\": TOKEN_EXPIRY}\n```"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Edit Fields": [
+      {
+        "json": {
+          "message": "code with comment:\n```python\nimport jwt\nimport time\n\n# Define a secret key used for encoding and decoding JWT tokens.\n# This key should be kept confidential and not exposed.\nSECRET_KEY = \"s3cr3t\"\n# Define the token's expiration time in seconds (e.g., 3600 seconds = 1 hour).\nTOKEN_EXPIRY = 3600\n\ndef generate_token(user_id):\n    \"\"\"\n    Generates a JSON Web Token (JWT) for a given user ID.\n\n    Args:\n        user_id: The unique identifier of the user.\n\n    Returns:\n        A string representing the encoded JWT.\n    \"\"\"\n    # Create the payload for the JWT.\n    # 'user_id' is the subject of the token.\n    # 'exp' (expiration time) is a Unix timestamp indicating when the token expires.\n    payload = {\n        \"user_id\": user_id,\n        \"exp\": time.time() + TOKEN_EXPIRY # Current time + token expiry duration\n    }\n    # Encode the payload using the SECRET_KEY and HS256 algorithm.\n    return jwt.encode(payload, SECRET_KEY, algorithm=\"HS256\")\n\ndef verify_token(token):\n    \"\"\"\n    Verifies and decodes a given JWT.\n\n    Args:\n        token: The JWT string to verify.\n\n    Returns:\n        The decoded payload if the token is valid, otherwise None.\n    \"\"\"\n    try:\n        # Attempt to decode the token using the SECRET_KEY and specified algorithms.\n        data = jwt.decode(token, SECRET_KEY, algorithms=[\"HS256\"])\n        return data\n    except jwt.ExpiredSignatureError:\n        # Handle the case where the token has expired.\n        return None\n    except jwt.InvalidTokenError:\n        # Handle the case where the token is invalid (e.g., tampered with, wrong signature).\n        return None\n\ndef login(username, password, db):\n    \"\"\"\n    Authenticates a user and generates a new token upon successful login.\n\n    Args:\n        username: The user's username.\n        password: The user's password (raw, to be hashed for comparison).\n        db: A database object with a find_user method and a way to hash passwords.\n\n    Returns:\n        A dictionary containing the token and its expiry, or an error message.\n    \"\"\"\n    # Find the user in the database by username.\n    user = db.find_user(username)\n    # Check if the user exists and if the provided password matches the stored hashed password.\n    # Assuming hash_password is a function available in the scope or db object that hashes the input password for comparison.\n    if not user or user.password != hash_password(password):\n        # If credentials are invalid, return an error.\n        return {\"error\": \"Invalid credentials\"}\n    \n    # If credentials are valid, generate a new token for the user.\n    token = generate_token(user.id)\n    # Return the generated token and its expiration time.\n    return {\"token\": token, \"expires_in\": TOKEN_EXPIRY}\n```\n\n\ncode with summary:\nThis Python code sets up a **user login system** that uses secure, time-limited access tokens.\n\nHere's how it works:\n\n1.  **Generate Tokens:** A function (`generate_token`) creates a **JSON Web Token (JWT)** for a given user. This token acts like a temporary pass, valid for **1 hour** (3600 seconds). It's uniquely tied to the user and is signed using a secret key for security.\n\n2.  **Verify Tokens:** Another function (`verify_token`) can check if a given token is **valid** and hasn't **expired**. If the token is expired or otherwise invalid, it won't be accepted.\n\n3.  **Login Process:** The main `login` function takes a `username` and `password`.\n    *   It checks these credentials against a database (`db`).\n    *   If the credentials are correct, it generates and returns a brand new, 1-hour valid token for that user.\n    *   If the credentials are wrong, it returns an \"Invalid credentials\" error.\n\nIn essence, it manages user logins by issuing and verifying secure, expiring access tokens."
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "comment addition",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "code summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "comment addition",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "code summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code summary": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "comment addition": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "adf47789-2858-4d71-8e8c-919e2826a778",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c16b79e2b700f03079840ccbf90b907e4138b9347f1894d4463fda3d6b02100d"
+  },
+  "id": "06iyKjRnLTzWrX8b",
+  "tags": []
+}
